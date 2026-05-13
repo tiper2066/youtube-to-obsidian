@@ -280,24 +280,24 @@ npm install -g pnpm
 
 #### 1.1 프로젝트 초기 셋업
 
-- [ ] `pnpm create next-app@latest` 로 Next.js 15 + TypeScript + Tailwind + App Router 프로젝트 생성
-- [ ] Shadcn UI 초기화: `pnpm dlx shadcn@latest init`
-- [ ] 기본 컴포넌트 설치: `pnpm dlx shadcn@latest add button input card toast progress checkbox select`
-- [ ] ESLint + Prettier 설정 (TypeScript strict mode 활성화)
-- [ ] `.env.local` 파일 생성 및 `.gitignore`에 추가 확인
-- [ ] Git 초기 커밋, GitHub private repo 연결
-- [ ] `CLAUDE.md` 파일 작성 (프로젝트 컨텍스트 — Claude Code 참고용)
-- [ ] 디렉토리 구조 잡기 (섹션 7 참조)
+- [x] `pnpm create next-app@latest` 로 Next.js 15 + TypeScript + Tailwind + App Router 프로젝트 생성
+- [x] Shadcn UI 초기화: `pnpm dlx shadcn@latest init`
+- [x] 기본 컴포넌트 설치: `pnpm dlx shadcn@latest add button input card toast progress checkbox select`
+- [x] ESLint + Prettier 설정 (TypeScript strict mode 활성화)
+- [x] `.env.local` 파일 생성 및 `.gitignore`에 추가 확인
+- [x] Git 초기 커밋, GitHub private repo 연결
+- [x] `CLAUDE.md` 파일 작성 (프로젝트 컨텍스트 — Claude Code 참고용)
+- [x] 디렉토리 구조 잡기 (섹션 7 참조)
 
 #### 1.2 YouTube Data API 검색 모듈
 
-- [ ] `googleapis` 또는 `@googleapis/youtube` 패키지 설치
-- [ ] `lib/youtube/search.ts` 작성:
+- [x] `googleapis` 또는 `@googleapis/youtube` 패키지 설치
+- [x] `lib/youtube/search.ts` 작성:
   - `searchVideos(params: SearchParams): Promise<VideoSearchResult[]>`
   - 입력: 키워드, 업로드 날짜 범위, 영상 길이, 타입(video/playlist), 최대 결과 수
   - 출력: 표준화된 영상 정보 배열
 
-- [ ] `SearchParams` 타입 정의:
+- [x] `SearchParams` 타입 정의:
   ```typescript
   type SearchParams = {
     query: string;
@@ -310,7 +310,7 @@ npm install -g pnpm
   };
   ```
 
-- [ ] `VideoSearchResult` 타입 정의:
+- [x] `VideoSearchResult` 타입 정의:
   ```typescript
   type VideoSearchResult = {
     videoId: string;
@@ -328,17 +328,17 @@ npm install -g pnpm
   };
   ```
 
-- [ ] 검색 흐름 구현:
+- [x] 검색 흐름 구현:
   1. `search.list` API로 영상 ID 목록 가져오기 (100 units)
   2. `videos.list` API로 각 영상의 상세 정보 (duration, viewCount, caption 등) 일괄 조회 (1 unit per call, 최대 50개 ID 동시 조회 가능)
   3. 결과 결합 후 반환
 
-- [ ] 언어 감지 로직 (`lib/utils/language.ts`):
+- [x] 언어 감지 로직 (`lib/utils/language.ts`):
   - 영상 메타데이터의 `defaultLanguage`, `defaultAudioLanguage` 우선 사용
   - 없으면 제목과 설명으로 추정 (간단한 정규식 또는 `franc` 라이브러리)
   - 그래도 모르면 'unknown' 반환
 
-- [ ] `app/api/search/route.ts` Route Handler 작성 + Postman / Thunder Client로 호출 테스트
+- [x] `app/api/search/route.ts` Route Handler 작성 + Postman / Thunder Client로 호출 테스트
 
 #### 1.3 자막 추출 모듈
 

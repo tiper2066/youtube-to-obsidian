@@ -167,8 +167,11 @@ duration: [길이]
 ## 환경 변수 (.env.local)
 
 ```bash
-# Google APIs (YouTube + Gemini, 같은 키 사용 가능)
-GOOGLE_API_KEY=AIzaSy...
+# YouTube Data API v3 (Google Cloud Console에서 발급)
+YOUTUBE_API_KEY=AIzaSy...
+
+# Gemini API (Google AI Studio 또는 Google Cloud Console에서 발급)
+GEMINI_API_KEY=AIzaSy...
 
 # Dropbox
 DROPBOX_ACCESS_TOKEN=sl.B...
@@ -181,6 +184,8 @@ GEMINI_MODEL=gemini-2.0-flash-exp
 MAX_VIDEOS_PER_BATCH=10
 MAX_RESULTS_PER_SEARCH=25
 ```
+
+> 계획서(`docs/IMPLEMENTATION_PLAN.md`)에는 두 API를 같은 키로 묶을 수 있다고 적혀 있지만, 실제로는 별도 키가 필요해서 `YOUTUBE_API_KEY`와 `GEMINI_API_KEY`로 분리해서 관리합니다.
 
 **중요**:
 
@@ -271,14 +276,34 @@ Notion은 다크 모드도 따뜻한 톤을 유지합니다. 순수 검정(`#000
 
 ## 구현 Phase
 
-| Phase       | 내용                                                                                                         | 상태    |
-| ----------- | ------------------------------------------------------------------------------------------------------------ | ------- |
-| **Phase 1** | 프로젝트 셋업 + 핵심 백엔드 모듈 (YouTube 검색, 자막 추출, Gemini 요약, Dropbox 업로드) + 개발용 검증 페이지 | 진행 중 |
-| **Phase 2** | 검색 UI + 결과 목록 + 카테고리 선택 모달 + 단일 영상 처리                                                    | 대기    |
-| **Phase 3** | 복수 선택 + SSE 기반 일괄 처리 + 진행 상황 표시                                                              | 대기    |
-| **Phase 4** | 카테고리 관리 UI, 인덱스 노트 자동 생성, 노트 템플릿 편집, PWA, 배포                                         | 대기    |
+| Phase       | 내용                                                                                                         | 상태                            |
+| ----------- | ------------------------------------------------------------------------------------------------------------ | ------------------------------- |
+| **Phase 1** | 프로젝트 셋업 + 핵심 백엔드 모듈 (YouTube 검색, 자막 추출, Gemini 요약, Dropbox 업로드) + 개발용 검증 페이지 | 진행 중 (1.1·1.2 완료, 1.3 대기) |
+| **Phase 2** | 검색 UI + 결과 목록 + 카테고리 선택 모달 + 단일 영상 처리                                                    | 대기                            |
+| **Phase 3** | 복수 선택 + SSE 기반 일괄 처리 + 진행 상황 표시                                                              | 대기                            |
+| **Phase 4** | 카테고리 관리 UI, 인덱스 노트 자동 생성, 노트 템플릿 편집, PWA, 배포                                         | 대기                            |
 
 > 현재 Phase는 작업 시작 전 매번 확인할 것. 각 Phase의 세부 작업 목록은 `IMPLEMENTATION_PLAN.md` 섹션 6 참조.
+
+### 백엔드 모듈 진행 상황
+
+| 모듈                         | 위치                                  | 상태   | 비고                                                       |
+| ---------------------------- | ------------------------------------- | ------ | ---------------------------------------------------------- |
+| YouTube 검색                 | `lib/youtube/search.ts`               | ✅ 완료 | 네이티브 `fetch`로 직접 호출 (`@googleapis/youtube` 미사용) |
+| YouTube 타입 정의            | `lib/youtube/types.ts`                | ✅ 완료 | 응답에서 실제 읽는 필드만 좁혀서 정의                       |
+| ISO 8601 duration 파서       | `lib/utils/duration.ts`               | ✅ 완료 | `parseIso8601Duration`, `formatDuration`                    |
+| 언어 감지                    | `lib/utils/language.ts`               | ✅ 완료 | `defaultLanguage` 우선, 없으면 한/일/중/영 휴리스틱         |
+| 검색 Route Handler           | `app/api/search/route.ts`             | ✅ 완료 | GET, 쿼리스트링 기반                                       |
+| 자막 추출                    | `lib/youtube/transcript.ts`           | ⬜ 대기 | Phase 1.3                                                  |
+| Gemini 요약                  | `lib/ai/gemini.ts`, `lib/ai/prompts.ts` | ⬜ 대기 | Phase 1.4                                                  |
+| 슬러그/Dropbox 업로드        | `lib/utils/slugify.ts`, `lib/dropbox/upload.ts` | ⬜ 대기 | Phase 1.5                                                  |
+| 개발용 검증 페이지           | `app/dev/page.tsx`                    | ⬜ 대기 | Phase 1.6                                                  |
+
+### 주요 결정 사항
+
+- **YouTube API 클라이언트**: 계획서는 `googleapis` 또는 `@googleapis/youtube` SDK 설치를 권장하지만, 실제로는 **네이티브 `fetch`로 직접 호출**한다. 이유: (1) API 키 인증만 쓰는 단순 REST 호출이라 SDK 이점이 적고, (2) 의존성과 번들 크기를 줄이며, (3) Next.js 캐싱·타입을 우리가 명시적으로 제어할 수 있다. 응답 타입은 `lib/youtube/types.ts`에서 우리가 실제 읽는 필드만 좁혀 정의.
+- **재생목록(playlist) 검색**: Phase 1에서는 `type=video`만 처리. `type=playlist`로 호출하면 명확한 에러를 던진다 (Phase 4 또는 추후 확장).
+- **검색 API의 HTTP 메서드**: GET + URL 쿼리스트링. 브라우저/curl 테스트가 쉽고 멱등하다. 프론트에서 호출할 때도 `fetch('/api/search?query=...')` 형태.
 
 ---
 
