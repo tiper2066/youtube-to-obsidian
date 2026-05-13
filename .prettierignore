@@ -1,0 +1,17 @@
+node_modules
+.next
+.vercel
+out
+build
+dist
+coverage
+*.log
+.env*
+public
+package-lock.json
+pnpm-lock.yaml
+
+# 사용자가 직접 작성한 문서는 포맷 대상에서 제외
+CLAUDE.md
+AGENTS.md
+docs/**
