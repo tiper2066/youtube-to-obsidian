@@ -1,3 +1,15 @@
+/*
+ * Pretendard Variable — 영문/한글을 모두 한 폰트로 처리.
+ * dynamic-subset은 필요한 글리프만 동적으로 로드해 초기 페이로드가 ~40KB로 가벼움.
+ * Notion의 Notion-Sans(Inter 기반)와 같은 휴머니스트-지오메트릭 톤을 한국어 환경에서 재현하기 위해 채택.
+ *
+ * CSS 사양상 `@import url()` 형태의 외부 시트 import는 다른 모든 규칙보다 앞에 와야 한다.
+ * Tailwind v4의 `@import 'tailwindcss'`도 빌드 시 ruleset으로 확장되므로, Pretendard
+ * import는 반드시 그보다 위에 둔다 (그렇지 않으면 next build가 경고를 띄우고 일부 브라우저는
+ * 폰트 로드를 건너뛸 수 있음).
+ */
+@import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css');
+
 @import 'tailwindcss';
 @import 'tw-animate-css';
 @import 'shadcn/tailwind.css';
@@ -7,8 +19,12 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans:
+    'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, system-ui, 'Apple SD Gothic Neo',
+    'Noto Sans KR', 'Malgun Gothic', 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --font-mono:
+    ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, 'Liberation Mono', 'Courier New', monospace;
+  /* 헤딩도 산세리프(Pretendard)를 그대로 사용. 위계는 weight/size로만 구분. */
   --font-heading: var(--font-sans);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
@@ -39,82 +55,92 @@
   --color-popover: var(--popover);
   --color-card-foreground: var(--card-foreground);
   --color-card: var(--card);
-  --radius-sm: calc(var(--radius) * 0.6);
-  --radius-md: calc(var(--radius) * 0.8);
+  --radius-sm: calc(var(--radius) * 0.5);
+  --radius-md: calc(var(--radius) * 0.67);
   --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) * 1.4);
-  --radius-2xl: calc(var(--radius) * 1.8);
-  --radius-3xl: calc(var(--radius) * 2.2);
-  --radius-4xl: calc(var(--radius) * 2.6);
+  --radius-xl: calc(var(--radius) * 1.33);
+  --radius-2xl: calc(var(--radius) * 1.67);
+  --radius-3xl: calc(var(--radius) * 2);
+  --radius-4xl: calc(var(--radius) * 2.33);
 }
 
+/*
+ * Notion 스타일 컬러 토큰 — "따뜻한 미니멀리즘".
+ * 차가운 회색이 아니라 미묘하게 따뜻한 톤(hue ≈ 60~85, chroma ≈ 0.005~0.012)으로 잡고,
+ * primary는 Notion의 시그니처 보라(hue 280)로 액센트를 준다.
+ * radius 0.75rem(12px) = DESIGN.md의 `rounded.lg` — 카드/모달/버튼 모두 둥근 톤이 통일된다.
+ */
 :root {
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
+  --background: oklch(0.99 0.004 85);
+  --foreground: oklch(0.24 0.01 60);
   --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
+  --card-foreground: oklch(0.24 0.01 60);
   --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --radius: 0.625rem;
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+  --popover-foreground: oklch(0.24 0.01 60);
+  --primary: oklch(0.55 0.21 280);
+  --primary-foreground: oklch(0.99 0.003 85);
+  --secondary: oklch(0.965 0.006 85);
+  --secondary-foreground: oklch(0.28 0.01 60);
+  --muted: oklch(0.965 0.006 85);
+  --muted-foreground: oklch(0.5 0.012 60);
+  --accent: oklch(0.94 0.022 290);
+  --accent-foreground: oklch(0.35 0.12 285);
+  --destructive: oklch(0.58 0.23 25);
+  --border: oklch(0.92 0.006 85);
+  --input: oklch(0.92 0.006 85);
+  --ring: oklch(0.55 0.21 280);
+  --chart-1: oklch(0.55 0.21 280);
+  --chart-2: oklch(0.65 0.18 30);
+  --chart-3: oklch(0.7 0.17 90);
+  --chart-4: oklch(0.65 0.18 170);
+  --chart-5: oklch(0.6 0.18 340);
+  --radius: 0.75rem;
+  --sidebar: oklch(0.985 0.005 85);
+  --sidebar-foreground: oklch(0.24 0.01 60);
+  --sidebar-primary: oklch(0.55 0.21 280);
+  --sidebar-primary-foreground: oklch(0.99 0.003 85);
+  --sidebar-accent: oklch(0.965 0.006 85);
+  --sidebar-accent-foreground: oklch(0.28 0.01 60);
+  --sidebar-border: oklch(0.92 0.006 85);
+  --sidebar-ring: oklch(0.55 0.21 280);
 }
 
+/*
+ * 다크 모드도 따뜻한 톤 유지 — 순수 검정 대신 미묘하게 따뜻한 다크 그레이.
+ * primary 보라는 한 단 밝게(0.65) 끌어올려 어두운 배경에서도 액센트가 살아 있게 한다.
+ */
 .dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
+  --background: oklch(0.21 0.006 80);
+  --foreground: oklch(0.96 0.004 85);
+  --card: oklch(0.25 0.006 80);
+  --card-foreground: oklch(0.96 0.004 85);
+  --popover: oklch(0.25 0.006 80);
+  --popover-foreground: oklch(0.96 0.004 85);
+  --primary: oklch(0.7 0.19 280);
+  --primary-foreground: oklch(0.21 0.006 80);
+  --secondary: oklch(0.28 0.006 80);
+  --secondary-foreground: oklch(0.96 0.004 85);
+  --muted: oklch(0.28 0.006 80);
+  --muted-foreground: oklch(0.72 0.008 85);
+  --accent: oklch(0.32 0.04 285);
+  --accent-foreground: oklch(0.85 0.07 285);
+  --destructive: oklch(0.68 0.21 25);
+  --border: oklch(1 0 0 / 12%);
+  --input: oklch(1 0 0 / 14%);
+  --ring: oklch(0.7 0.19 280);
+  --chart-1: oklch(0.7 0.19 280);
+  --chart-2: oklch(0.72 0.17 30);
+  --chart-3: oklch(0.78 0.15 90);
+  --chart-4: oklch(0.72 0.17 170);
+  --chart-5: oklch(0.7 0.17 340);
+  --sidebar: oklch(0.25 0.006 80);
+  --sidebar-foreground: oklch(0.96 0.004 85);
+  --sidebar-primary: oklch(0.7 0.19 280);
+  --sidebar-primary-foreground: oklch(0.21 0.006 80);
+  --sidebar-accent: oklch(0.28 0.006 80);
+  --sidebar-accent-foreground: oklch(0.96 0.004 85);
+  --sidebar-border: oklch(1 0 0 / 12%);
+  --sidebar-ring: oklch(0.7 0.19 280);
 }
 
 @layer base {
@@ -123,8 +149,28 @@
   }
   body {
     @apply bg-background text-foreground;
+    /*
+     * Pretendard에는 미세한 lining-figure 옵션(ss03 등)이 있지만 기본 상태가 한국어 가독성에
+     * 가장 좋게 튜닝되어 있다. -webkit-font-smoothing은 macOS Safari/Chrome에서 굵기가
+     * 부풀어 보이는 현상을 줄여 디자인에 의도한 weight 위계를 유지하기 위함.
+     */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
   }
   html {
     @apply font-sans;
+  }
+  /* DESIGN.md: 600 weight + 타이트한 leading + 음의 letter-spacing. */
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    @apply font-heading tracking-tight;
+    font-feature-settings:
+      'ss10' on,
+      'tnum' on;
   }
 }

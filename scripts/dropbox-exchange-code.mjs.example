@@ -1,0 +1,71 @@
+#!/usr/bin/env node
+/**
+ * Dropbox authorization code → refresh_token 교환 (1회성 스크립트).
+ *
+ * 사용 방법:
+ *   1. 아래 3개 상수를 본인 값으로 교체
+ *      - APP_KEY: Dropbox App Console "App key" (예: votm2zoy0jnxxgc)
+ *      - APP_SECRET: 같은 콘솔 "App secret" — "Show" 클릭해서 노출 후 복사
+ *      - AUTH_CODE: 아래 URL을 브라우저로 열어 "Allow" 후 화면에 표시되는 code
+ *        https://www.dropbox.com/oauth2/authorize?client_id={APP_KEY}&token_access_type=offline&response_type=code
+ *
+ *   2. 실행:  node scripts/dropbox-exchange-code.mjs
+ *
+ *   3. 출력된 DROPBOX_REFRESH_TOKEN을 .env.local에 저장
+ *      (기존 DROPBOX_ACCESS_TOKEN 라인은 삭제하거나 주석 처리)
+ *
+ * 주의:
+ *   - authorization code는 발급 직후 짧은 시간(약 5~10분)에 만료된다.
+ *     code 받자마자 실행할 것. 실패하면 인증 URL을 다시 열어 새 code 발급.
+ *   - 이 파일에 실제 APP_SECRET / AUTH_CODE를 적은 채로 commit하지 말 것.
+ *     실행 후 placeholder로 되돌리거나 변경분을 reset 하세요.
+ */
+
+const APP_KEY = 'YOUR_APP_KEY';
+const APP_SECRET = 'YOUR_APP_SECRET';
+const AUTH_CODE = 'YOUR_AUTH_CODE';
+
+if (
+  APP_KEY === 'YOUR_APP_KEY' ||
+  APP_SECRET === 'YOUR_APP_SECRET' ||
+  AUTH_CODE === 'YOUR_AUTH_CODE'
+) {
+  console.error('❌ 스크립트 상단의 APP_KEY, APP_SECRET, AUTH_CODE를 실제 값으로 변경한 뒤 다시 실행하세요.');
+  process.exit(1);
+}
+
+const response = await fetch('https://api.dropboxapi.com/oauth2/token', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+  body: new URLSearchParams({
+    code: AUTH_CODE,
+    grant_type: 'authorization_code',
+    client_id: APP_KEY,
+    client_secret: APP_SECRET,
+  }),
+});
+
+const data = await response.json();
+
+if (!response.ok) {
+  console.error('❌ 토큰 교환 실패');
+  console.error('  status:', response.status, response.statusText);
+  console.error('  body  :', JSON.stringify(data, null, 2));
+  console.error('');
+  console.error('자주 만나는 에러:');
+  console.error('  - "invalid_grant"  : code가 만료됐거나 이미 한 번 사용됨. 인증 URL을 다시 열어 새 code 발급.');
+  console.error('  - "invalid_client" : APP_KEY / APP_SECRET 조합이 틀림. Dropbox 콘솔 값 다시 확인.');
+  process.exit(1);
+}
+
+console.log('✅ 토큰 교환 성공');
+console.log('');
+console.log('--- 아래 값을 .env.local에 저장하세요 ---');
+console.log('');
+console.log(`DROPBOX_APP_KEY=${APP_KEY}`);
+console.log(`DROPBOX_APP_SECRET=${APP_SECRET}`);
+console.log(`DROPBOX_REFRESH_TOKEN=${data.refresh_token}`);
+console.log('');
+console.log('# 기존 DROPBOX_ACCESS_TOKEN 라인은 삭제하거나 주석 처리하세요.');
+console.log(`# 참고: 이번 호출로 함께 받은 access_token (약 ${data.expires_in}초 후 만료, 굳이 저장 안 해도 됨):`);
+console.log(`#   ${data.access_token}`);

@@ -34,6 +34,9 @@ yarn-error.log*
 .env*
 !.env.example
 
+# local-only scripts with embedded secrets (Dropbox OAuth 1회성 교환)
+/scripts/dropbox-exchange-code.mjs
+
 # vercel
 .vercel
 
