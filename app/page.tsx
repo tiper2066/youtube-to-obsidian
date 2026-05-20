@@ -273,7 +273,7 @@ export default function HomePage() {
             <span className='hidden sm:inline'>설정</span>
           </Link>
         </div>
-        <p className='text-muted-foreground max-w-2xl text-sm leading-relaxed sm:text-base'>
+        <p className='text-muted-foreground max-w-3xl text-sm leading-relaxed sm:text-base'>
           유튜브 영상을 검색하거나 URL을 붙여 넣으면, 자막을 요약해 옵시디언 보관함에 마크다운
           노트로 저장합니다.
         </p>
@@ -421,7 +421,8 @@ async function processVideo(
 
     if (!response.ok || !data.success) {
       const message = data.success === false ? data.error : `HTTP ${response.status}`;
-      const stepPrefix = data.success === false && data.step ? `[${STEP_KOREAN_LABEL[data.step]}] ` : '';
+      const stepPrefix =
+        data.success === false && data.step ? `[${STEP_KOREAN_LABEL[data.step]}] ` : '';
       // upload 실패 + markdown이 응답에 동봉된 경우: 로컬 다운로드 폴백을 액션 버튼으로 제공.
       const fallback =
         data.success === false && data.step === 'upload' && data.markdown && data.filename
