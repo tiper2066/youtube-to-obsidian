@@ -37,6 +37,9 @@ yarn-error.log*
 # local-only scripts with embedded secrets (Dropbox OAuth 1회성 교환)
 /scripts/dropbox-exchange-code.mjs
 
+# 실제 사용자명/절대 경로가 박힌 launchd plist. .example만 git에 포함.
+/scripts/com.*.youtube-to-obsidian.plist
+
 # vercel
 .vercel
 

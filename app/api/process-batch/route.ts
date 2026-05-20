@@ -8,6 +8,22 @@ import { getVideoMeta } from '@/lib/youtube/search';
 import { extractTranscript } from '@/lib/youtube/transcript';
 
 /**
+ * `youtube-transcript`(YouTube 페이지 스크래핑)와 `node:Buffer`(Dropbox upload payload)를 사용하므로
+ * Edge 런타임이 아닌 Node.js 런타임이 필요하다. 또 SSE 스트리밍을 위해서도 Node가 필요.
+ */
+export const runtime = 'nodejs';
+
+/**
+ * Vercel Hobby 플랜의 함수 타임아웃 상한(60초)에 맞춰 설정. **중요한 한계**: 영상 1개당 보통
+ * 15~40초가 걸리므로 60초 안에 처리할 수 있는 batch 크기는 현실적으로 **1~2개**다. 그 이상이면
+ * 함수가 강제 종료되어 SSE 스트림이 끊기고 클라이언트는 진행 중이던 영상부터 시작해 끝까지 모두
+ * "처리 실패" 상태로 본다. Vercel Pro로 업그레이드하면 300초(5분)까지 가능 — 10개 batch가 안정적
+ * 으로 들어간다. Hobby 환경에서 안정적으로 운영하려면 `.env`의 `MAX_VIDEOS_PER_BATCH`를 2~3으로
+ * 낮춰 batch 크기 자체를 줄이는 것을 권장.
+ */
+export const maxDuration = 60;
+
+/**
  * POST /api/process-batch
  *
  * 복수 영상을 순차 처리하면서 진행 상황을 SSE(Server-Sent Events) 스트림으로 송신한다.

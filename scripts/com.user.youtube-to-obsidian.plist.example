@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  macOS LaunchAgent — 로그인 시 youtube-to-obsidian 자동 시작.
+
+  설치 방법 (이 .example을 본인 사용자명/경로로 교체한 실제 plist로 만들기):
+    1. 이 파일을 복사: cp scripts/com.user.youtube-to-obsidian.plist.example \
+                          scripts/com.{USER}.youtube-to-obsidian.plist
+    2. {{USER}}, {{PROJECT_PATH}} 두 자리를 본인 값으로 치환.
+       예: USER=n22309002, PROJECT_PATH=/Users/n22309002/Desktop/claude-code/youtube-to-obsidian
+    3. ~/Library/LaunchAgents/로 복사:
+       cp scripts/com.{USER}.youtube-to-obsidian.plist ~/Library/LaunchAgents/
+    4. 로드: launchctl bootstrap gui/$UID ~/Library/LaunchAgents/com.{USER}.youtube-to-obsidian.plist
+
+  중지/제거는 README 아래쪽 안내 참고.
+-->
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <!-- launchd가 이 에이전트를 식별하는 고유 라벨. 도메인 역순 + 식별자 관례를 따른다. -->
+    <key>Label</key>
+    <string>com.{{USER}}.youtube-to-obsidian</string>
+
+    <!-- 실행할 명령. wrapper 스크립트 한 줄. nvm 로드/.next 자동 빌드/npm start까지 안에서 처리. -->
+    <key>ProgramArguments</key>
+    <array>
+        <string>{{PROJECT_PATH}}/scripts/launchd-start.sh</string>
+    </array>
+
+    <!-- wrapper에서도 cd를 하지만 안전망 차원에서 한 번 더 명시. -->
+    <key>WorkingDirectory</key>
+    <string>{{PROJECT_PATH}}</string>
+
+    <!-- 로그인 시 자동 시작. -->
+    <key>RunAtLoad</key>
+    <true/>
+
+    <!--
+      비정상 종료 시 재시작. SuccessfulExit=false면 종료 코드 0이 아닐 때만 재시작 — 정상 종료(예:
+      재부팅 직전 launchctl bootout)는 그대로 둔다. ThrottleInterval=30으로 빠른 재시작 루프 방지.
+    -->
+    <key>KeepAlive</key>
+    <dict>
+        <key>SuccessfulExit</key>
+        <false/>
+    </dict>
+    <key>ThrottleInterval</key>
+    <integer>30</integer>
+
+    <!-- stdout/stderr를 ~/Library/Logs/로 흘려보내 디버깅에 쓴다. Console.app에서도 바로 보임. -->
+    <key>StandardOutPath</key>
+    <string>/Users/{{USER}}/Library/Logs/youtube-to-obsidian.out.log</string>
+    <key>StandardErrorPath</key>
+    <string>/Users/{{USER}}/Library/Logs/youtube-to-obsidian.err.log</string>
+
+    <!--
+      launchd는 부모 환경을 거의 비워 두므로 최소 PATH를 직접 지정. nvm 자체는 wrapper에서
+      source하지만 system PATH(`/usr/bin/env` 위치 등)는 여기서 확보.
+    -->
+    <key>EnvironmentVariables</key>
+    <dict>
+        <key>NODE_ENV</key>
+        <string>production</string>
+        <key>PATH</key>
+        <string>/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin</string>
+        <key>HOME</key>
+        <string>/Users/{{USER}}</string>
+    </dict>
+
+    <!-- 옵션: 동시에 두 인스턴스가 뜨지 않도록 단일 인스턴스 보장. -->
+    <key>AbandonProcessGroup</key>
+    <false/>
+</dict>
+</plist>

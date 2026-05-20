@@ -10,6 +10,21 @@ import { getVideoMeta } from '@/lib/youtube/search';
 import { extractTranscript } from '@/lib/youtube/transcript';
 
 /**
+ * `youtube-transcript`(YouTube 페이지 스크래핑)와 `node:Buffer`(Dropbox upload payload)를 사용하므로
+ * Edge 런타임이 아닌 Node.js 런타임이 필요하다. 명시하지 않아도 Next.js 기본은 Node지만,
+ * 의도를 분명히 하기 위해 고정.
+ */
+export const runtime = 'nodejs';
+
+/**
+ * Vercel Hobby 플랜의 함수 타임아웃 상한(60초). 단일 영상 파이프라인은 보통 ~15~40초이지만,
+ * 자막 길이/Gemini 응답 지연/Dropbox 업로드 큐에 따라 1분에 가까이 갈 수 있어 최대치로 잡는다.
+ * 그래도 한도를 넘으면 Vercel이 함수를 강제 종료하고 클라이언트는 504를 받는다 — Pro 플랜이면
+ * 300초까지 늘릴 수 있다.
+ */
+export const maxDuration = 60;
+
+/**
  * POST /api/process
  *
  * 단일 영상을 처리하는 파이프라인 엔드포인트.
